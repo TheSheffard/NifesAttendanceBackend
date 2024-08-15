@@ -3,11 +3,13 @@ import dotenv from "dotenv"
 import route from "./route.js"
 import mongoose from "mongoose"
 import cookieParser from 'cookie-parser'
+import cors from "cors"
 
 
 
 const app = express();
 dotenv.config()
+app.use(cors())
 
 // Middleware to parse cookies
 app.use(cookieParser());
