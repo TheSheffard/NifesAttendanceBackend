@@ -1,7 +1,5 @@
-// import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
-// import dotenv from "dotenv"
-import { User, Login, Signup } from "./modules/users.model.js";
+import { User, Signup } from "./modules/users.model.js";
 
 
 
@@ -14,7 +12,55 @@ const getDayRange = (date) => {
     return { start, end };
 };
 
+const normalizeUsername = (username) => {
+    // Convert to lowercase, remove spaces and single-character words
+    return username.toLowerCase().split(' ').filter(word => word.length > 1).join('');
+};
+
 // Function to find missing users
+// export const findMissingUsers = async (req, res) => {
+//     try {
+//         const today = new Date();
+//         const sevenDaysAgo = new Date();
+//         sevenDaysAgo.setDate(today.getDate() - 7);
+
+//         const { start: sevenDaysAgoStart, end: sevenDaysAgoEnd } = getDayRange(sevenDaysAgo);
+//         const { start: todayStart, end: todayEnd } = getDayRange(today);
+
+//         // Fetch users recorded 7 days ago
+//         const sevenDaysAgoUsers = await User.find({
+//             date: { $gte: sevenDaysAgoStart, $lte: sevenDaysAgoEnd },
+//         }).select('username');
+
+//         // Fetch users recorded today, by username 
+//         const todayUsers = await User.find({
+//             date: { $gte: todayStart, $lte: todayEnd },
+//         }).select('username');
+
+//         const sevenDaysAgoUsernames = sevenDaysAgoUsers.map(user => user.username);// seven days ago attendance
+//         const todayUsernames = todayUsers.map(user => user.username);// Todays attendance
+
+//         // Find users recorded 7 days ago but not today
+//         const missingUsernames = sevenDaysAgoUsernames.filter(
+//             username => !todayUsernames.includes(username)
+//         );
+
+//         if (missingUsernames.length === 0) {
+//             return res.status(400).json({ message: "No absentees found." });
+//         }
+
+//         // Retrieve the full details of the missing users
+//         const missingUsers = await User.find({
+//             username: { $in: missingUsernames },
+//             date: { $gte: sevenDaysAgoStart, $lte: sevenDaysAgoEnd },
+//         }).select('username phonenumber lodge levelinschool gender');
+
+//         return res.status(200).json({ missingUsers });
+//     } catch (error) {
+//         res.status(400).json({ message: "An error occurred while fetching missing users" });
+//     }
+// };
+
 export const findMissingUsers = async (req, res) => {
     try {
         const today = new Date();
@@ -26,16 +72,17 @@ export const findMissingUsers = async (req, res) => {
 
         // Fetch users recorded 7 days ago
         const sevenDaysAgoUsers = await User.find({
-            createdAt: { $gte: sevenDaysAgoStart, $lte: sevenDaysAgoEnd },
+            date: { $gte: sevenDaysAgoStart, $lte: sevenDaysAgoEnd },
         }).select('username');
 
-        // Fetch users recorded today
+        // Fetch users recorded today, by username 
         const todayUsers = await User.find({
-            createdAt: { $gte: todayStart, $lte: todayEnd },
+            date: { $gte: todayStart, $lte: todayEnd },
         }).select('username');
 
-        const sevenDaysAgoUsernames = sevenDaysAgoUsers.map(user => user.username);
-        const todayUsernames = todayUsers.map(user => user.username);
+        // Normalize usernames
+        const sevenDaysAgoUsernames = sevenDaysAgoUsers.map(user => normalizeUsername(user.username));
+        const todayUsernames = todayUsers.map(user => normalizeUsername(user.username));
 
         // Find users recorded 7 days ago but not today
         const missingUsernames = sevenDaysAgoUsernames.filter(
@@ -46,33 +93,104 @@ export const findMissingUsers = async (req, res) => {
             return res.status(400).json({ message: "No absentees found." });
         }
 
-        // Retrieve the full details of the missing users
-        const missingUsers = await User.find({
-            username: { $in: missingUsernames },
-            createdAt: { $gte: sevenDaysAgoStart, $lte: sevenDaysAgoEnd },
-        }).select('username phonenumber lodge levelinschool');
+        // Retrieve the full details of the missing users using original usernames
+        const originalMissingUsers = sevenDaysAgoUsers.filter(
+            user => missingUsernames.includes(normalizeUsername(user.username))
+        );
 
-       return res.status(200).json({ missingUsers });
+        const missingUsers = await User.find({
+            username: { $in: originalMissingUsers.map(user => user.username) },
+            date: { $gte: sevenDaysAgoStart, $lte: sevenDaysAgoEnd },
+        }).select('username phonenumber lodge levelinschool gender');
+
+        return res.status(200).json({ missingUsers });
     } catch (error) {
         res.status(400).json({ message: "An error occurred while fetching missing users" });
     }
 };
 
 
-
 //submit user info to the db 
+// export const submitUserInfo = async (req, res) => {
+//     const { username, levelinschool, lodge, phonenumber, courseofstudy, dcg, dateofbirth, gender, } = req.body;
+//     // console.log(submissiondate.req.body);
+
+//     if (!username || !levelinschool || !lodge || !phonenumber || !courseofstudy || !dcg || !dateofbirth || !gender) {
+//         return res.status(400).json({ message: "All fields are required" });
+
+//     }
+
+//     // Use the provided submissio n date or default to the current date
+//     // const dateToUse = submissiondate ? new Date(submissiondate) : new Date();
+
+//     const startOfDay = new Date();
+//     startOfDay.setHours(0, 0, 0, 0);
+//     const endOfDay = new Date();
+//     endOfDay.setHours(23, 59, 59, 999);
+
+
+//     let ExistingUser;
+
+//     try {
+//         ExistingUser = await User.findOne({
+//             username,
+//             date: { 
+//                 $gte: startOfDay,
+//                 $lte: endOfDay
+//             }
+//         }) 
+
+//     } catch (e) {
+//         return res.status(400).json({ message: "Error occured while verifiying if user has been added to the database" })
+//     }
+//     // CHECK IF NAME IS ALREADY IN THE DB
+//     if (ExistingUser) {
+//         console.log(` The Attendant ${ExistingUser.username} Has Already Been Submitted To The Database Today`);
+
+//         return res.status(400).json({
+//             message: `The Attendant ${ExistingUser.username} Has Already Been Submitted To The Database Today`
+//         });
+//     }
+//     try {
+//         await User.create({
+//             username,
+//             levelinschool,
+//             lodge,
+//             phonenumber,
+//             courseofstudy,
+//             dcg,
+//             dateofbirth,
+//             gender,
+//             // date:dateToUse
+//             date
+
+//         });  
+
+//         return res.status(200).json({ message: "New Attendent Has Been Added To The DB" });
+
+//     } catch (e) {
+
+//         return res.status(400).json({ message: "Error Occured While Trying To Save UserInfo" });
+
+//     }
+
+// } 
+
 export const submitUserInfo = async (req, res) => {
-    const { username, levelinschool, lodge, phonenumber, courseofstudy, dcg, dateofbirth, gender } = req.body;
+    const { username, levelinschool, lodge, phonenumber, courseofstudy, dcg, dateofbirth, gender, Submitdate } = req.body;
+    console.log(`Date from the frontend ${Submitdate}`);
 
     if (!username || !levelinschool || !lodge || !phonenumber || !courseofstudy || !dcg || !dateofbirth || !gender) {
         return res.status(400).json({ message: "All fields are required" });
     }
 
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
+    const submissionDate = new Date(Submitdate);
 
+    const startOfDay = new Date(submissionDate);
+    
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(submissionDate);
+    endOfDay.setHours(23, 59, 59, 999);
 
     let ExistingUser;
 
@@ -84,18 +202,18 @@ export const submitUserInfo = async (req, res) => {
                 $lte: endOfDay
             }
         })
-
     } catch (e) {
         return res.status(400).json({ message: "Error occured while verifiying if user has been added to the database" })
     }
     // CHECK IF NAME IS ALREADY IN THE DB
     if (ExistingUser) {
-        console.log(` The Attendant ${ExistingUser.username} Has Already Been Submitted To The Database Today`);
+        const datePart = submissionDate.toISOString().split('T')[0];
 
         return res.status(400).json({
-            message: `The Attendant ${ExistingUser.username} Has Already Been Submitted To The Database Today`
+            message: `The Attendant ${ExistingUser.username} Has Already Been Submitted To The Database On ${datePart}`
         });
     }
+
     try {
         await User.create({
             username,
@@ -105,14 +223,14 @@ export const submitUserInfo = async (req, res) => {
             courseofstudy,
             dcg,
             dateofbirth,
-            gender
-
+            gender,
+            date: submissionDate
         });
         return res.status(200).json({ message: "New Attendent Has Been Added To The DB" });
     } catch (e) {
-        return res.status(400).json({ message: "Error Occured While Trying To Save UserInfo" });
+        console.log(e);
+        return res.status(400).json({ message: "Error Occured While Trying To Save UserInfo", e });
     }
-
 }
 
 // LOGIN VALIDATION
@@ -122,16 +240,14 @@ export const Validatelogin = async (req, res) => {
     let user;
 
     try {
-        user = await Signup.findOne({ username });
-        if (!user) {
-            return res.status(400).json({ message: "User Does Not Exist!" });
-        }
+        user = await Signup.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });// made the username case-insensitive
+
+        if (!user) return res.status(400).json({ message: "User Does Not Exist!" });
 
 
-        // const isPasswordCorrect = await bcrypt.compare(password, user.password); // compare the password if the username is found in the DB
-        // console.log(`Password comparison result: ${isPasswordCorrect}`);
 
-        const isPasswordCorrect = password === user.password;
+
+        const isPasswordCorrect = password.toLowerCase() === user.password.toLowerCase();
         console.log(`Password comparison result: ${isPasswordCorrect}`);
 
 
@@ -141,14 +257,16 @@ export const Validatelogin = async (req, res) => {
             return res.status(400).json({ message: "Incorrect Password" })
         }
 
+
+
         const data = {
             username
-        }
+        };
 
-        const token = jwt.sign(data, process.env.JWT_SECRET, { expiresIn: "30d" })
-        res.cookie("token", token)
+        const token = jwt.sign(data, process.env.JWT_SECRET, { expiresIn: "30d" });
+        res.cookie("token", token);
+        console.log(`the token during sign up${token}`);
 
-        console.log("Login Successful");
         return res.redirect("/dashboard")
     } catch (e) {
         console.log(e.message);
@@ -168,14 +286,18 @@ export const ValidateSignup = async (req, res) => {
     let newuser;
 
     try {
-        newuser = await Signup.findOne({ email });
+        newuser = await Signup.findOne({
+                $or: [
+                    { username },
+                    { email }
+                ]
+        });
     } catch (e) {
         res.status(400).json({ message: `Sever Error occured while tryng to validate if User already exist` })
     }
 
     if (newuser) {
-        console.log("Email already exist, login instead");
-        return res.status(400).json({ message: "A User Already Exist With This Email, Login Instead" })
+        return res.status(400).json({ message: "A User Already Exist With This Email or username, Login Instead" })
     }
 
 
@@ -191,8 +313,6 @@ export const ValidateSignup = async (req, res) => {
             password: password
         })
 
-        console.log("A new user has been created");
-
         const data = {
             username,
             email
@@ -200,7 +320,7 @@ export const ValidateSignup = async (req, res) => {
         const token = jwt.sign(data, process.env.JWT_SECRET, { expiresIn: "30d" })
         res.cookie("token", token)
 
-        return res.status(200).json({ message: "Your Sign up successful" });
+        return res.status(200).json({ message: "Sign up successful" });
 
     } catch (e) {
         console.log(e.message);
@@ -233,17 +353,18 @@ export const getcurrentusers = async (req, res) => {
         return res.status(400).json({ message: "No user found" })
     }
     res.status(200).json(allUsers);
-    console.log(allUsers);
+    // console.log(allUsers);
 }
 
 // FUNCTION TO PROTECT ROUTE
 export const authenticateToken = (req, res, next) => {
     const token = req.cookies.token
-    // console.log(`The token: ${token}`);
     if (!token) {
 
         return res.status(401).json({ message: "Unauthorized Access" });
     }
+
+
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
             console.log(`Token verification failed: ${err.message}`);
@@ -255,12 +376,14 @@ export const authenticateToken = (req, res, next) => {
 
 };
 
+
 //SEARCH FOR ATTANDANT 
 
 export const searchForAttandant = async (req, res) => {
     let { username } = req.body;
+    // let Uname=  username.toLowerCase()
 
-    if (!username || typeof username !== 'string') {
+    if (!username || typeof username !== string) {
         return res.status(400).json({ message: "Invalid username provided" });
     }
 
@@ -271,7 +394,7 @@ export const searchForAttandant = async (req, res) => {
 
     try {
         const searchuser = await User.find({
-            username: { $eq: username },
+            username: { $eq: username, $options: "i" },
             date: { $gte: startOfDay, $lte: endOfDay }
         });
 
@@ -311,19 +434,46 @@ export const Getreport = async (req, res) => {
         if (month) {
             const [year, monthNumber] = month.split('-');
             const { start, end } = getMonthRange(parseInt(year), parseInt(monthNumber));
-            users = await User.find({ createdAt: { $gte: start, $lte: end } }).exec();
+
+            // Aggregate query to count the number of times each user appears in the specified month
+
+            users = await User.aggregate([
+                {
+                    $match: {
+                        date: { $gte: start, $lte: end }
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$username",
+                        count: { $sum: 1 },
+                        details: { $first: "$$ROOT" }
+                    }
+                },
+                {
+                    $match: {
+                        count: { $gte: 2 }
+                    }
+                },
+                {
+                    $replaceRoot: {
+                        newRoot: "$details"
+                    }
+                }
+            ]);
+
         } else if (date) {
             const { start, end } = getDayRange(date);
-            users = await User.find({ createdAt: { $gte: start, $lte: end } }).exec();
+            users = await User.find({ date: { $gte: start, $lte: end } }).exec();
         }
 
         if (users.length > 0) {
-            return res.status(200).json({ users }); 
-        } 
- 
-            return res.status(400).json({ message: `No user was recorded on the specified date` });
-        
-        
+            return res.status(200).json({ users });
+        }
+
+        return res.status(400).json({ message: `No user was recorded on the specified date` });
+
+
 
 
 
