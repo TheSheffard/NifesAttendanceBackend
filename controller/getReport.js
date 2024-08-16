@@ -59,7 +59,7 @@ export const getReport = async (req, res) => {
 
         } else if (date) {
             const { start, end } = getDayRange(date);
-            users = await User.find({ date: { $gte: start, $lte: end } }).exec();
+            users = await User.find({ createdAt: { $gte: start, $lte: end } }).exec();
         }
 
         if (users.length > 0) return res.status(200).json(users);
