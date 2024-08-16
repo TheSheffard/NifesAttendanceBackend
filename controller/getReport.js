@@ -35,7 +35,7 @@ export const getReport = async (req, res) => {
             users = await User.aggregate([
                 {
                     $match: {
-                        date: { $gte: start, $lte: end }
+                        createdAt: { $gte: start, $lte: end }
                     }
                 },
                 {
