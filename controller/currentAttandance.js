@@ -21,7 +21,7 @@ export const currentUsers = async (req, res) => {
             }
         }).populate("userId")
  
-        if (users.length === 0) throw new Error("No user have been recorded today")
+        if (users.length === 0) return res.status(400).json("No user have been recorded today")
 
         return res.status(200).json(users)
 

@@ -13,7 +13,7 @@ export const JwtValidation = async (req, res, next)=>{
             console.log(`Token verification failed: ${err.message}`);
 
             return res.status(403).json({ message: "Invalid Token" });
-        }
+        } 
         req.user = user; 
         next();
     });
