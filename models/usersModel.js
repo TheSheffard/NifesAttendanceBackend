@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
+import mongoose from "mongoose"
 
 
 const userSchema = new mongoose.Schema(
-    {
+{
         username: {
             type: String,
             required: true,
@@ -34,11 +34,15 @@ const userSchema = new mongoose.Schema(
             lowercase: true,
 
         },
-        dateofbirth: {      
+        day:{
             type: String,
             required: true,
             lowercase: true,
-
+        },
+        month:{
+            type: String,
+            required: true,
+            lowercase: true,
         },
         stateoforigin: {
             type: String,

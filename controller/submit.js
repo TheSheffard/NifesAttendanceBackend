@@ -1,5 +1,5 @@
-import { User } from "../models/users.model.js";
-import { Attendance } from "../models/Attendance.js";
+import {User} from "../models/usersModel.js"
+import { Attendance } from "../models/AttendanceModel.js";
 
 function getWeekNumber(date) {
     const startOfYear = new Date(date.getFullYear(), 0, 1);
@@ -7,14 +7,16 @@ function getWeekNumber(date) {
 
     return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
 }
+ 
 
+ 
 export const submitinfo = async (req, res) => {
 
 
-    const { username, levelinschool, lodgename, phonenumber, courseofstudy, dcg, dateofbirth, stateoforigin, gender } = req.body;
+    const { username, levelinschool, lodgename, phonenumber, courseofstudy, dcg, day, month, stateoforigin, gender } = req.body;
 
-    if (!username || !levelinschool || !lodgename || !phonenumber || !courseofstudy || !dcg || !dateofbirth || !stateoforigin || !gender) {
-        return res.status(400).json({ message: "All input fields are required" });
+    if (!username || !levelinschool || !lodgename || !phonenumber || !courseofstudy || !dcg || !day || !month || !stateoforigin || !gender) {
+        return res.status(403).json({ message: "All input fields are required" });
     }
 
     const startOfDay = new Date();
@@ -24,21 +26,19 @@ export const submitinfo = async (req, res) => {
 
     const currentWeekNumber = getWeekNumber(new Date());
     console.log(currentWeekNumber)
-    console.log(username)
-
 
     let checkUser;
-    try {   
 
 
-        // Check if the user exists in the database by phone number
+    try {
+        // Check if the user exists in the database by phoneNumber
         checkUser = await User.findOne({ phonenumber })
 
-        if (checkUser) {
-            // Check if the user has already been marked present today
-            const attendance = await Attendance.findOne({
-                userId: checkUser._id,
+        if (checkUser) {//here, it's assumed that a user exist with the incoming phone number
 
+            //Below checks if the user has already been marked present today
+            const checkAttendance = await Attendance.findOne({
+                userId: checkUser._id,
                 createdAt: {
                     $gte: startOfDay,
                     $lte: endOfDay
@@ -46,54 +46,96 @@ export const submitinfo = async (req, res) => {
             });
 
 
-            if (attendance) {// If the user has been marked present, throw an error
+            if (checkAttendance) {//here, the user has been marked present for that day
 
-                return res.status(400).json({ message: ` The user with this number ${checkUser.phonenumber} has already been marked present today` })
-
+                return res.status(400).json({ message: `${checkUser.username} is already present for today` })
             } else {
-
+                //Mark attendance for user if not present for the day 
                 await Attendance.create({
                     week: `${currentWeekNumber}`,
                     userId: checkUser._id
-                })
+                });
 
-                return res.status(200).json({ message: `${checkUser.username} has been marked present today` });
+                return res.status(200).json({ message: `${checkUser.username} is now present for today` })
+
 
             }
 
 
-
-        } else {
-
+        } else {// if  the phone number is not found in the database
 
 
-            // create record for new user 
-            const newUser =   await User.create({
-                username,
-                levelinschool,
-                lodgename,
-                phonenumber,
-                courseofstudy,
-                dcg,
-                dateofbirth,
-                stateoforigin,
-                gender
-            });
+            // Check if there is a user with matching details (username, gender, state of origin )
+            const matchingUser = await User.findOne({ username, stateoforigin, gender })
 
-             // Mark the new user present for today
-             await Attendance.create({
-                week: `${currentWeekNumber}`,
-                userId: newUser._id
-            });
+            if (matchingUser) {
+                matchingUser.phonenumber = phonenumber;
+                // matchingUser.levelinschool = // also update the user levelin school
+                await matchingUser.save();
 
-            return res.status(200).json({ message: "A new user has been added to the database and marked present today" });
+
+                const checkAttendance = await Attendance.findOne({
+                    week: `${currentWeekNumber}`,
+                    userId: matchingUser._id,
+
+                });
+                console.log(`current week number is ${checkAttendance.week}`)
+
+                if (parseInt(checkAttendance.week) === currentWeekNumber) { 
+
+                    return res.status(400).json({
+                        message: `${matchingUser.username} details updated and is already present`
+                    });
+
+                }else{
+                    await Attendance.create({
+                        week: `${currentWeekNumber}`,
+                        userId: matchingUser._id,
+
+                    });
+
+
+                    return res.status(200).json({
+                        message: `Details updated for ${matchingUser.username}, and attendance marked`
+                    });
+                }
+
+
+                     
+
+
+            } else {
+                // If no matching user found, proceed with creating a new user
+                const newUser = await User.create({
+                    username,
+                    levelinschool,
+                    lodgename,
+                    phonenumber,
+                    courseofstudy,
+                    dcg,
+                    day,
+                    month,
+                    stateoforigin,
+                    gender
+                });
+
+                // Mark the new user present for today
+                await Attendance.create({
+                    week: `${currentWeekNumber}`,
+                    userId: newUser._id
+                });
+
+                return res.status(200).json({ message: "New attandant added and marked present today" });
+
+            }
+
         }
 
-
-    } catch (e) {
-        console.log(e.message)
-        return res.status(500).json({ message: "Server Error" })
+    } catch (error) {
+        console.log(error.message)
+        return res.status(500).json({ message: "Error occured" })
     }
+
 
 
 }

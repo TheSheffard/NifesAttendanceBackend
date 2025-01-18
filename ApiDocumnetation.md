@@ -1,5 +1,7 @@
-signup {
+For the sigup page 
+
+Sign up {
     username,
-    password,
-    email
+    password
 }
+

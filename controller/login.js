@@ -1,4 +1,4 @@
-import { Signup } from "../models/Signup.js";
+import { Signup } from "../models/SignupModel.js";
 import jwt from "jsonwebtoken"
 
 export const login = async (req, res) => {
@@ -25,13 +25,13 @@ export const login = async (req, res) => {
         };
 
         const token = jwt.sign(data, process.env.JWT_SECRET, { expiresIn: "30d" });
-        res.cookie("token", token);
+        res.cookie("token", token, { httpOnly: true,  secure: true });
+        console.log("the cookie", token)
 
-        console.log("Login successfull")
-        return res.status(200).json({ message: " Login Successfull" })
+        return res.status(200).json({ message: " Login Successfull", token })
 
     } catch (e) {
         console.log(e.message)
-        res.status(500).json({message: "Server Error"})
-    }
+       return res.status(500).json({message: "Server Error"})
+    } 
 }

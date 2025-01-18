@@ -9,14 +9,14 @@ import cors from "cors"
 
 const app = express();
 dotenv.config()
-app.use(cors())
 
 // Middleware to parse cookies
 app.use(cookieParser());
  
 const port = process.env.PORT || 4000;
  
-
+app.use(cors())
+    
 
 // Body parser middleware to handle form submissions
 app.use(express.urlencoded({ extended: true }));
@@ -39,9 +39,9 @@ const startsever = async () => {
         });
 
         app.listen(port, () => {
-            console.log(`app  listening on ${port}`);
+            console.log(`App  listening on ${port}`);
         })
-    } catch (e) {
+    } catch(e) {
         console.log(e.message + "Error connecting to Database")
     }   
 }   

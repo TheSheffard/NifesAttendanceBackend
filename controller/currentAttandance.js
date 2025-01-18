@@ -1,7 +1,7 @@
-import { Attendance } from "../models/Attendance.js";
+import { Attendance } from "../models/AttendanceModel.js";
 
 
-//Get all users created today
+//Get all users created for that current day 
 export const currentUsers = async (req, res) => {
 
 
@@ -26,10 +26,10 @@ export const currentUsers = async (req, res) => {
         return res.status(200).json(users)
 
     } catch (error) {
-        console.log(error.message)
+        console.log(error.message) 
         return res.status(500).json({ message: "Server error" })
     }
-
-
+  
+  
 
 }

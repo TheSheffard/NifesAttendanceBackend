@@ -6,7 +6,7 @@ const signupSchema = new mongoose.Schema({
         required: true,
         lowercase: true
 
-    },
+    }, 
     password: {
         type: String,
         required: true,
@@ -15,6 +15,10 @@ const signupSchema = new mongoose.Schema({
     email:{
         type: String,
         required: true
+    },
+    code:{
+        type:String,
+        default: ''
     }
 
 })
