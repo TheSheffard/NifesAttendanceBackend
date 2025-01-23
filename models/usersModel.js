@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 
 
 const userSchema = new mongoose.Schema(
-{
+    {
         username: {
             type: String,
             required: true,
@@ -34,12 +34,12 @@ const userSchema = new mongoose.Schema(
             lowercase: true,
 
         },
-        day:{
+        day: {
             type: String,
             required: true,
             lowercase: true,
         },
-        month:{
+        month: {
             type: String,
             required: true,
             lowercase: true,
@@ -53,6 +53,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             lowercase: true,
+        },
+        area: {
+            type: String,
+            required: true
         }
 
     },

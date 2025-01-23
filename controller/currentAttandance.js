@@ -29,7 +29,5 @@ export const currentUsers = async (req, res) => {
         console.log(error.message) 
         return res.status(500).json({ message: "Server error" })
     }
-  
-  
 
 }

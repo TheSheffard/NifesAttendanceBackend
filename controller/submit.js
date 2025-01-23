@@ -1,4 +1,4 @@
-import {User} from "../models/usersModel.js"
+import { User } from "../models/usersModel.js"
 import { Attendance } from "../models/AttendanceModel.js";
 
 function getWeekNumber(date) {
@@ -7,15 +7,15 @@ function getWeekNumber(date) {
 
     return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
 }
- 
 
- 
+
+
 export const submitinfo = async (req, res) => {
 
 
-    const { username, levelinschool, lodgename, phonenumber, courseofstudy, dcg, day, month, stateoforigin, gender } = req.body;
+    const { username, levelinschool, lodgename, phonenumber, courseofstudy, dcg, day, month, stateoforigin, gender, area } = req.body;
 
-    if (!username || !levelinschool || !lodgename || !phonenumber || !courseofstudy || !dcg || !day || !month || !stateoforigin || !gender) {
+    if (!username || !levelinschool || !lodgename || !phonenumber || !courseofstudy || !dcg || !day || !month || !stateoforigin || !gender || !area) {
         return res.status(403).json({ message: "All input fields are required" });
     }
 
@@ -81,13 +81,13 @@ export const submitinfo = async (req, res) => {
                 });
                 console.log(`current week number is ${checkAttendance.week}`)
 
-                if (parseInt(checkAttendance.week) === currentWeekNumber) { 
+                if (parseInt(checkAttendance.week) === currentWeekNumber) {
 
                     return res.status(400).json({
                         message: `${matchingUser.username} details updated and is already present`
                     });
 
-                }else{
+                } else {
                     await Attendance.create({
                         week: `${currentWeekNumber}`,
                         userId: matchingUser._id,
@@ -99,10 +99,6 @@ export const submitinfo = async (req, res) => {
                         message: `Details updated for ${matchingUser.username}, and attendance marked`
                     });
                 }
-
-
-                     
-
 
             } else {
                 // If no matching user found, proceed with creating a new user
@@ -116,7 +112,8 @@ export const submitinfo = async (req, res) => {
                     day,
                     month,
                     stateoforigin,
-                    gender
+                    gender,
+                    area
                 });
 
                 // Mark the new user present for today
@@ -125,20 +122,17 @@ export const submitinfo = async (req, res) => {
                     userId: newUser._id
                 });
 
-                return res.status(200).json({ message: "New attandant added and marked present today" });
+                return res.status(200).json({ message: "New attendant added and marked present today" });
 
-            }
+            }    
 
         }
 
     } catch (error) {
         console.log(error.message)
-        return res.status(500).json({ message: "Error occured" })
+        return res.status(500).json({ message: "Error occurred" })
     }
-
-
-
 }
-
+ 
 
 
