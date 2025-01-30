@@ -36,7 +36,7 @@ export const SignAttendance = async (req, res) => {
             const checkAttendance = await Attendance.findOne({
                 userId: findPhoneNumber._id,
 
-                createdAt: {
+                createdAt: {  
                     $gte: startOfDay,
                     $lte: endOfDay
                 }

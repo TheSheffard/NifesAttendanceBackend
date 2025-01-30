@@ -98,13 +98,13 @@ export const submitinfo = async (req, res) => {
                     return res.status(200).json({
                         message: `Details updated for ${matchingUser.username}, and attendance marked`
                     });
-                }
-
+                } 
+ 
             } else {
                 // If no matching user found, proceed with creating a new user
                 const newUser = await User.create({
                     username,
-                    levelinschool,
+                    levelinschool, 
                     lodgename,
                     phonenumber,
                     courseofstudy,

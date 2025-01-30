@@ -12,6 +12,7 @@ import { searchForUser } from "./controller/searchForAttandant.js";
 import { getReport } from "./controller/getReport.js";
 import { absentees } from "./controller/Absentees.js";
 import { weeekAttedance } from "./controller/getWeek.js";
+import { EditUserInfo } from "./controller/EditUserInfo.js";
 
 
 
@@ -26,6 +27,7 @@ router.get("/searchuser", searchForUser)//search for users
 router.post("/report",  getReport) // Get report base on specified date
 router.get("/absentees",  absentees)//Get absentees 
 router.get("/weeekAttedance", weeekAttedance)//weekly attandance
+router.put("/users/:id", EditUserInfo);// Edit user Detail
 
 
 

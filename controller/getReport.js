@@ -1,3 +1,4 @@
+import { Attendance } from "../models/AttendanceModel.js";
 import { User } from "../models/usersModel.js";
 
 // Helper function to get the start and end of a specific day
@@ -57,12 +58,15 @@ export const getReport = async (req, res) => {
                     }
                 }
             ]);
- 
+
 
         } else if (date) {
             const { start, end } = getDayRange(date);
-            users = await User.find({ createdAt: { $gte: start, $lte: end } }).exec();
-        } 
+            let findUsers = await Attendance.find({ createdAt: { $gte: start, $lte: end } }).exec();
+            // Extract all user IDs from the attendance records
+            let userIds = findUsers.map(record => record.userId);
+            users = await User.find({ _id: { $in: userIds } });
+        }
 
         if (users.length > 0) {
             return res.status(200).json(users);
