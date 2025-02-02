@@ -9,7 +9,8 @@ function getWeekNumber(date) {
     return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
 }
 const currentDate = new Date();
-const weekNumber = getWeekNumber(currentDate);
+// const weekNumber = getWeekNumber(currentDate);
+let weekNumber
 
 
 const startOfDay = new Date();
@@ -22,7 +23,11 @@ let findPhoneNumber
 
 
 export const SignAttendance = async (req, res) => {
-    const { phonenumber } = req.body
+    const { phonenumber, weeknumber } = req.body
+
+    console.log("the week number for phine bumber", weeknumber)
+    //check if week number is present 
+    weekNumber = weeknumber ? getWeekNumber(currentDate) - weeknumber : getWeekNumber(currentDate)
 
 
     try {
@@ -36,7 +41,7 @@ export const SignAttendance = async (req, res) => {
             const checkAttendance = await Attendance.findOne({
                 userId: findPhoneNumber._id,
 
-                createdAt: {  
+                createdAt: {
                     $gte: startOfDay,
                     $lte: endOfDay
                 }
@@ -44,12 +49,13 @@ export const SignAttendance = async (req, res) => {
 
 
             if (checkAttendance) {// If the user has been marked present, throw an error
+                console.log(checkAttendance)
 
                 return res.status(400).json({ message: `${findPhoneNumber.username} is already present for today` })
 
             } else {
 
-           
+
                 signUser()// call the take user function if the user phone number exist
 
                 return res.status(200).json({ message: `${findPhoneNumber.username} is now present for today` });

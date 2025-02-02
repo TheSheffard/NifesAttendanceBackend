@@ -16,7 +16,7 @@ import { EditUserInfo } from "./controller/EditUserInfo.js";
 
 
 
-router.post("/signup", signup);//Create a new user
+router.post("/signup", signup);//Create a new user       
 router.post("/login", login)// Login in validation
 router.post("/submit",  submitinfo)// Submit users info to the database
 router.post("/attendance", SignAttendance) //find user by phonenumber

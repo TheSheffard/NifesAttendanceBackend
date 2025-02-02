@@ -13,7 +13,7 @@ function getWeekNumber(date) {
 export const submitinfo = async (req, res) => {
 
 
-    const { username, levelinschool, lodgename, phonenumber, courseofstudy, dcg, day, month, stateoforigin, gender, area } = req.body;
+    const { username, levelinschool, lodgename, phonenumber, courseofstudy, dcg, day, month, stateoforigin, gender, area, weeknumber } = req.body;
 
     if (!username || !levelinschool || !lodgename || !phonenumber || !courseofstudy || !dcg || !day || !month || !stateoforigin || !gender || !area) {
         return res.status(403).json({ message: "All input fields are required" });
@@ -24,8 +24,11 @@ export const submitinfo = async (req, res) => {
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
 
-    const currentWeekNumber = getWeekNumber(new Date());
-    console.log(currentWeekNumber)
+    const CheckWeek = getWeekNumber(new Date());
+
+    const currentWeekNumber = weeknumber ? getWeekNumber(new Date()) - weeknumber : getWeekNumber(new Date())
+
+
 
     let checkUser;
 
@@ -70,7 +73,7 @@ export const submitinfo = async (req, res) => {
 
             if (matchingUser) {
                 matchingUser.phonenumber = phonenumber;
-                // matchingUser.levelinschool = // also update the user levelin school
+                // matchingUser.level in school = // also update the user level in school
                 await matchingUser.save();
 
 
@@ -98,13 +101,13 @@ export const submitinfo = async (req, res) => {
                     return res.status(200).json({
                         message: `Details updated for ${matchingUser.username}, and attendance marked`
                     });
-                } 
- 
+                }
+
             } else {
                 // If no matching user found, proceed with creating a new user
                 const newUser = await User.create({
                     username,
-                    levelinschool, 
+                    levelinschool,
                     lodgename,
                     phonenumber,
                     courseofstudy,
@@ -124,7 +127,7 @@ export const submitinfo = async (req, res) => {
 
                 return res.status(200).json({ message: "New attendant added and marked present today" });
 
-            }    
+            }
 
         }
 
@@ -133,6 +136,6 @@ export const submitinfo = async (req, res) => {
         return res.status(500).json({ message: "Error occurred" })
     }
 }
- 
+
 
 
