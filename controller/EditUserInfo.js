@@ -1,6 +1,7 @@
 import { User } from "../models/usersModel.js";
 
 export const EditUserInfo = async (req, res) => {
+
     const { payload } = req.body; // Get the payload containing the fields to update
     const userId = req.params.id; // Assuming the user ID is passed in the route parameter
 
