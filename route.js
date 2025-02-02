@@ -29,7 +29,7 @@ router.get("/absentees",  absentees)//Get absentees
 router.get("/weeekAttedance", weeekAttedance)//weekly attandance
 router.put("/edit-users/:id", EditUserInfo);// Edit user Detail
 router.get("/find-user/:id", FindUserById);// Edit user Detail
-router.delete("/users/:id", deleteUser);
+router.delete("/delete-users/:id", deleteUser);
 
 
 
