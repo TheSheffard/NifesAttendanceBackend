@@ -33,7 +33,7 @@ export const FindUserById = async (req, res) => {
 export const deleteUser = async (req, res) => {
     const { id } = req.params; // Extract user ID from request parameters
 
-    console.log(id)
+    console.log(id) 
 
     if (!id) {
         return res.status(400).json({ message: "User ID is required" });
