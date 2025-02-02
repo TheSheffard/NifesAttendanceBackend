@@ -1,3 +1,4 @@
+import { Attendance } from "../models/AttendanceModel.js"
 import { User } from "../models/usersModel.js"
 
 //Get all users in the db 
@@ -32,13 +33,15 @@ export const FindUserById = async (req, res) => {
 export const deleteUser = async (req, res) => {
     const { id } = req.params; // Extract user ID from request parameters
 
+    console.log(id)
+
     if (!id) {
         return res.status(400).json({ message: "User ID is required" });
     }
 
     try {
         // Find and delete the user by ID
-        const deletedUser = await User.findByIdAndDelete({ _id: id });
+        const deletedUser = await Attendance.findByIdAndDelete({ _id: id });
 
         if (!deletedUser) {
             return res.status(404).json({ message: "User not found" });
