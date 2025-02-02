@@ -6,7 +6,7 @@ import { login } from "./controller/login.js";
 import { JwtValidation } from "./controller/jwt.js";
 import { submitinfo } from "./controller/submit.js";
 import { SignAttendance, signUser } from "./controller/signAttendance.js";
-import { allUsers, FindUserById } from "./controller/Getallusers.js";
+import { allUsers, deleteUser, FindUserById } from "./controller/Getallusers.js";
 import { currentUsers } from "./controller/currentAttandance.js";
 import { searchForUser } from "./controller/searchForAttandant.js";
 import { getReport } from "./controller/getReport.js";
@@ -29,6 +29,7 @@ router.get("/absentees",  absentees)//Get absentees
 router.get("/weeekAttedance", weeekAttedance)//weekly attandance
 router.put("/edit-users/:id", EditUserInfo);// Edit user Detail
 router.get("/find-user/:id", FindUserById);// Edit user Detail
+router.delete("/users/:id", deleteUser);
 
 
 

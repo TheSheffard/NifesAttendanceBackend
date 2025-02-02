@@ -27,3 +27,26 @@ export const FindUserById = async (req, res) => {
         return res.status(500).json({ message: "Server error" })
     }
 }
+
+
+export const deleteUser = async (req, res) => {
+    const { id } = req.params; // Extract user ID from request parameters
+
+    if (!id) {
+        return res.status(400).json({ message: "User ID is required" });
+    }
+
+    try {
+        // Find and delete the user by ID
+        const deletedUser = await User.findByIdAndDelete({ _id: id });
+
+        if (!deletedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json({ message: "User deleted successfully", user: deletedUser });
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        return res.status(500).json({ message: "Server error occurred" });
+    }
+};
