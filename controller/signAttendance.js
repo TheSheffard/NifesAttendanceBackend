@@ -9,7 +9,6 @@ function getWeekNumber(date) {
     return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
 }
 const currentDate = new Date();
-// const weekNumber = getWeekNumber(currentDate);
 let weekNumber
 
 
@@ -19,51 +18,44 @@ const endOfDay = new Date();
 endOfDay.setHours(23, 59, 59, 999);
 
 
-let findPhoneNumber
 
 
 export const SignAttendance = async (req, res) => {
-    const { phonenumber, weeknumber } = req.body
+    const { userId, weeknumber } = req.body
 
-    console.log("the week number for phine bumber", weeknumber)
     //check if week number is present 
     weekNumber = weeknumber ? getWeekNumber(currentDate) - weeknumber : getWeekNumber(currentDate)
 
 
     try {
-
-        findPhoneNumber = await User.findOne({ phonenumber: { $regex: phonenumber, $options: "i" } })
-
-        if (findPhoneNumber) {//here checks if the phoneNumber is in the database
-
-
-            // Check if the user has already been marked present today
-            const checkAttendance = await Attendance.findOne({
-                userId: findPhoneNumber._id,
-
-                createdAt: {
-                    $gte: startOfDay,
-                    $lte: endOfDay
-                }
-            });
-
-
-            if (checkAttendance) {// If the user has been marked present, throw an error
-                console.log(checkAttendance)
-
-                return res.status(400).json({ message: `${findPhoneNumber.username} is already present for today` })
-
-            } else {
-
-
-                signUser()// call the take user function if the user phone number exist
-
-                return res.status(200).json({ message: `${findPhoneNumber.username} is now present for today` });
-
+ 
+        // Check if the user has already been marked present today
+        const checkAttendance = await Attendance.findOne({
+            userId: userId,
+  
+            createdAt: {
+                $gte: startOfDay, 
+                $lte: endOfDay
             }
+        });
+ 
+
+        if (checkAttendance) {// If the user has been marked present, throw an error
+
+            return res.status(400).json({ message: "This Attendant is already present for today" })
+
         } else {
-            return res.status(400).json({ message: "Please add new attendant" })
+
+
+            await Attendance.create({
+                week: `${weekNumber}`,
+                userId: userId
+            })
+
+            return res.status(200).json({ message: "Attendant is now present for today" });
+
         }
+
 
     } catch (error) {
         console.log(error.message)
@@ -73,16 +65,5 @@ export const SignAttendance = async (req, res) => {
 
 }
 
-export const signUser = async (req, res) => {
-    try {
-        // take new attendance for the user
-        await Attendance.create({
-            week: `${weekNumber}`,
-            userId: findPhoneNumber._id
-        })
 
-    } catch (error) {
-        return res.status(500).json({ message: "Error occurred while trying to take user attendance" })
 
-    }
-}
