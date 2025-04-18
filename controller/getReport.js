@@ -111,7 +111,7 @@ export const getReport = async (req, res) => {
                 },
                 { 
                     $match: {
-                        attendanceCount: { $gte: 2 } // Keep users with at least 3 attendances
+                        attendanceCount: { $gte: 3 } // Keep users with at least 3 attendances
                     } 
                 }
             ]);
